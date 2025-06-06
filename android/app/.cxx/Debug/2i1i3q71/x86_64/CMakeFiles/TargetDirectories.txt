@@ -1,0 +1,2 @@
+/home/rei-do-mines/desvalia-1/android/app/.cxx/Debug/2i1i3q71/x86_64/CMakeFiles/edit_cache.dir
+/home/rei-do-mines/desvalia-1/android/app/.cxx/Debug/2i1i3q71/x86_64/CMakeFiles/rebuild_cache.dir

@@ -1,14 +1,16 @@
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 InputDecoration emailAuthDecoration(String label) {
   return InputDecoration(
     hintText: label,
-    fillColor: const Color(0xFF282E36),
+    fillColor: Color(0xFF282E36).withOpacity(0.5),
     filled: true,
     contentPadding: const EdgeInsets.all(12),
     prefixIcon: const Icon(
       Icons.account_circle_outlined,
-      color: Color(0xFF484D54),
+      color: Color(0XFFb0c32e),
     ),
     hintStyle: const TextStyle(
       color: Color(0xFF666F7B),
@@ -22,7 +24,7 @@ InputDecoration emailAuthDecoration(String label) {
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(
-        color: Color(0xFF464C54),
+        color: Color(0XFFb0c32e),
       ),
     ),
     errorBorder: OutlineInputBorder(
@@ -33,6 +35,9 @@ InputDecoration emailAuthDecoration(String label) {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Color(0XFFb0c32e),
+      ),
     ),
     focusedErrorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),

@@ -1,10 +1,11 @@
-import 'package:des/src/Splash/screens/splashPage.dart';
+import 'package:des/src/Modules/Splash/screens/splash_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  runApp(
-    const DessApp(),
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const DessApp());
+  await dotenv.load(fileName: '.env');
 }
 
 class DessApp extends StatelessWidget {

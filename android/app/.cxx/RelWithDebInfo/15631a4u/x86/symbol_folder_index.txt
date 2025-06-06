@@ -1,0 +1,1 @@
+/home/rei-do-mines/desvalia-1/build/app/intermediates/cxx/RelWithDebInfo/15631a4u/obj/x86
