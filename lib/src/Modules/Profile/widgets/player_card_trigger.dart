@@ -1,16 +1,14 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:des/src/GlobalConstants/font.dart';
+import 'package:des/src/Modules/UserData/screens/user_card_page.dart';
 import 'package:flutter/material.dart';
 
-class PlayerCardTrigger extends StatefulWidget {
-  const PlayerCardTrigger({super.key});
+class PlayerCardTrigger extends StatelessWidget {
+  final int participantID;
 
-  @override
-  State<PlayerCardTrigger> createState() => _PlayerCardTriggerState();
-}
+  const PlayerCardTrigger({super.key, required this.participantID});
 
-class _PlayerCardTriggerState extends State<PlayerCardTrigger> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -27,7 +25,16 @@ class _PlayerCardTriggerState extends State<PlayerCardTrigger> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           side: const BorderSide(color: Colors.transparent),
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserCardPage(
+                participantID: participantID,
+              ),
+            ),
+          );
+        },
         child: Row(
           children: [
             const Icon(Icons.badge, color: Colors.white, size: 60),

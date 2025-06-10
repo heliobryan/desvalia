@@ -157,9 +157,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   participantID: participantID,
                 ),
                 const SizedBox(height: 30),
-                PlayerCardTrigger(),
+                PlayerCardTrigger(
+                  participantID: participantID,
+                ),
                 const SizedBox(height: 30),
-                DataCardTrigger(),
+                DataCardTrigger(
+                  participantID: participantID,
+                ),
               ],
             ),
           ),

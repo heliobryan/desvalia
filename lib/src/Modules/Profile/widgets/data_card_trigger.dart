@@ -4,14 +4,11 @@ import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/Modules/UserBioData/screens/user_biological_page.dart';
 import 'package:flutter/material.dart';
 
-class DataCardTrigger extends StatefulWidget {
-  const DataCardTrigger({super.key});
+class DataCardTrigger extends StatelessWidget {
+  final int participantID;
 
-  @override
-  State<DataCardTrigger> createState() => _DataCardTriggerState();
-}
+  const DataCardTrigger({super.key, required this.participantID});
 
-class _DataCardTriggerState extends State<DataCardTrigger> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,7 +29,9 @@ class _DataCardTriggerState extends State<DataCardTrigger> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => UserBiologicalPage(),
+              builder: (context) => UserBiologicalPage(
+                participantID: participantID,
+              ),
             ),
           );
         },

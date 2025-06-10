@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
-import 'package:des/src/Modules/Avaliations/services/get_participant_evaluation.dart';
-import 'package:des/src/Modules/Avaliations/widgets/view_avaliation.dart';
+import 'package:des/src/Modules/UserAvaliations/services/get_participant_evaluation.dart';
+import 'package:des/src/Modules/UserAvaliations/widgets/view_avaliation.dart';
 import 'package:flutter/material.dart';
 
 class AvaliationPage extends StatefulWidget {
@@ -27,25 +27,20 @@ class _AvaliationPageState extends State<AvaliationPage> {
 
   Future<List<Map<String, dynamic>>> loadJudgments() async {
     try {
-      final evaluations = await GetParticipantEvaluations.fetchEvaluations(
-          widget.participantID);
+      final judgments =
+          await GetParticipantEvaluations.fetchJudgments(widget.participantID);
 
-      final List<Map<String, dynamic>> judgmentsList = [];
+      for (var judgment in judgments) {
+        // ignore: unused_local_variable
+        final measurement = judgment['item']['measurement_unit'] ?? "";
+        final id = judgment['id'];
+        final score = judgment['score'];
+        final itemName = judgment['item']?['name'] ?? 'sem nome';
 
-      for (var evaluation in evaluations) {
-        final judgments = evaluation['judgments'];
-        if (judgments is List) {
-          for (var judgment in judgments) {
-            if (judgment is Map<String, dynamic>) {
-              judgmentsList.add(judgment);
-            }
-          }
-        } else {
-          debugPrint('Evaluation ${evaluation['id']} has no valid judgments');
-        }
+        log('ID: $id | Score: $score | Item: $itemName');
       }
 
-      return judgmentsList;
+      return judgments;
     } catch (e, stack) {
       log('Erro ao carregar julgamentos: $e');
       log('Stack trace: $stack');
@@ -136,21 +131,37 @@ class _AvaliationPageState extends State<AvaliationPage> {
                     future: allJudgments,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      if (snapshot.hasError) {
-                        return Text(
-                          "Erro ao carregar dados.",
-                          style: secondFont.bold(color: Colors.white),
+                        return const Center(
+                          child: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              color: Color(0XFFA6B92E),
+                              strokeWidth: 4,
+                            ),
+                          ),
                         );
                       }
+
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            "Erro ao carregar dados.",
+                            style: secondFont.bold(color: Colors.white),
+                          ),
+                        );
+                      }
+
                       final judgments = snapshot.data!;
                       if (judgments.isEmpty) {
-                        return Text(
-                          "Nenhuma avaliação encontrada.",
-                          style: secondFont.bold(color: Colors.white),
+                        return Center(
+                          child: Text(
+                            "Nenhuma avaliação encontrada.",
+                            style: secondFont.bold(color: Colors.white),
+                          ),
                         );
                       }
+
                       return ListView.builder(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),

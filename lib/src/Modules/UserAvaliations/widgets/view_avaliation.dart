@@ -8,8 +8,9 @@ class ViewAvaliation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itemName = judgment['name'] ?? 'Item desconhecido';
+    final itemName = judgment['item']['name'] ?? 'Item desconhecido';
     final score = judgment['score']?.toString() ?? '0';
+    final measurement = judgment['item']['measurement_unit'] ?? "";
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -49,7 +50,7 @@ class ViewAvaliation extends StatelessWidget {
                   decoration: const BoxDecoration(color: Colors.black),
                   child: Center(
                     child: Text(
-                      score,
+                      "$score $measurement",
                       style: secondFont.bold(color: Colors.white, fontSize: 17),
                     ),
                   ),

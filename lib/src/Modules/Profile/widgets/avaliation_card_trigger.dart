@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
-
 import 'package:des/src/GlobalConstants/font.dart';
-import 'package:des/src/Modules/Avaliations/screens/avaliation_page.dart';
+import 'package:des/src/Modules/UserAvaliations/screens/avaliation_page.dart';
 import 'package:flutter/material.dart';
 
 class AvaliationCardTrigger extends StatelessWidget {
