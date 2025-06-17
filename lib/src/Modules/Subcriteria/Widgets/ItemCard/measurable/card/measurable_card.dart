@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/Modules/Subcriteria/Services/get_participants.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/measurable/widgets/measurable_card_athletes_info.dart';
@@ -11,6 +14,10 @@ class MeasurableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth * 0.9;
+    final buttonWidth = screenWidth * 0.75;
+
     return FutureBuilder<String?>(
       future: SharedPreferences.getInstance()
           .then((prefs) => prefs.getString('token')),
@@ -25,29 +32,36 @@ class MeasurableCard extends StatelessWidget {
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
               return const Center(
-                  child: CircularProgressIndicator(color: Color(0XFFA6B92E)));
+                child: CircularProgressIndicator(color: Color(0XFFA6B92E)),
+              );
             }
 
             if (snap.hasError || !snap.hasData) {
               return const Center(
-                child: Text('Erro ao carregar atletas',
-                    style: TextStyle(color: Colors.white)),
+                child: Text(
+                  'Erro ao carregar atletas',
+                  style: TextStyle(color: Colors.white),
+                ),
               );
             }
+
             if (snap.data!.isEmpty) {
               return const Center(
-                child: Text('Nenhum atleta encontrado',
-                    style: TextStyle(color: Colors.white)),
+                child: Text(
+                  'Nenhum atleta encontrado',
+                  style: TextStyle(color: Colors.white),
+                ),
               );
             }
+
+            log('Lista de Atletas Formatada:\n${const JsonEncoder.withIndent('  ').convert(snap.data)}');
 
             final athletes = snap.data!;
 
             return Container(
-              width: 550,
+              width: cardWidth,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: const Color(0XFFA6B92E),
                   width: 1,
@@ -62,22 +76,25 @@ class MeasurableCard extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 20,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
                   ...athletes.map((athlete) {
                     final user = athlete['user'];
+
                     final name = user != null
                         ? '${user['name'] ?? ''} ${user['last_name'] ?? ''}'
                             .trim()
                         : 'Nome não informado';
-
+                    //${user["id"] ?? ""}
                     return MeasurableCardAthletesInfo(athleteName: name);
                   }),
+                  const SizedBox(height: 16),
                   SizedBox(
-                    width: 450,
+                    width: buttonWidth,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0XFFA6B92E),
+                        backgroundColor: Color(0XFFA6B92E),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 10,

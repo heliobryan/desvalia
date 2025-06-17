@@ -1,8 +1,17 @@
-// ignore_for_file: avoid_print
-import 'package:des/src/GlobalConstants/font.dart';
+// ignore_for_file: deprecated_member_use
+import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
+  );
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+}
 
 class MarketPage extends StatefulWidget {
   const MarketPage({super.key});
@@ -12,69 +21,67 @@ class MarketPage extends StatefulWidget {
 }
 
 class _MarketPageState extends State<MarketPage> {
-  Future<void> _launchURL() async {
-    final url = Uri.parse('https://loja.flamengo.com.br/');
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Não foi possível abrir a URL';
-      }
-    } catch (e) {
-      print("Erro ao tentar abrir a URL: $e");
-    }
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse('https://loja.flamengo.com.br/'));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color(0xFF1E1E1E),
+        toolbarHeight: 65,
+        backgroundColor: const Color(0XFFA6B92E),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.exit_to_app_outlined,
-              color: Colors.white,
-              size: 30,
-            ),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (BuildContext context) => const ExitButton(),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.exit_to_app_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (BuildContext context) => const ExitButton(),
+                ),
+              ),
             ),
           ),
         ],
-        title: Text(
-          'LOJA',
-          style: principalFont.medium(color: Colors.white, fontSize: 20),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+              colors: [
+                const Color(0xFF42472B).withOpacity(0.5),
+                const Color(0xFF42472B).withOpacity(0.5),
+                Colors.black,
+              ],
+            ),
+          ),
         ),
+        title: Image.asset(
+          Assets.homelogo,
+          width: 250,
+        ),
+        centerTitle: true,
       ),
       backgroundColor: const Color(0xFF121212),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 3,
-                ),
-              ),
-              child: IconButton(
-                onPressed: _launchURL,
-                icon: const Icon(
-                  Icons.store_outlined,
-                  size: 100,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: WebViewWidget(controller: _controller),
     );
   }
 }

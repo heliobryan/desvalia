@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer';
@@ -9,8 +10,8 @@ Future<List> getCriteria() async {
     final token = sharedPreferences.getString('token');
     log('Token: $token');
 
-    var url = Uri.parse(
-        'https://api.des.versatecnologia.com.br/api/criteria?page=1&perPage=1000');
+    var url =
+        Uri.parse('${dotenv.env['API_HOST']}api/criteria?page=1&perPage=1000');
 
     var restAwnser = await http.get(url, headers: {
       'Authorization': 'Bearer $token',

@@ -1,6 +1,7 @@
 // ignore: file_names
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +18,7 @@ class GetParticipantEvaluations {
 
     // 1. Buscar participante
     final participantUrl = Uri.parse(
-      'https://api.des.versatecnologia.com.br/api/participants/$participantID',
+      '${dotenv.env['API_HOST']}api/participants/$participantID',
     );
     final participantResponse =
         await http.get(participantUrl, headers: headers);
@@ -46,7 +47,7 @@ class GetParticipantEvaluations {
 
     // 2. Buscar avaliação
     final evaluationUrl = Uri.parse(
-      'https://api.des.versatecnologia.com.br/api/evaluations/$evaluationId',
+      '${dotenv.env['API_HOST']}api/evaluations/$evaluationId',
     );
     final evaluationResponse = await http.get(evaluationUrl, headers: headers);
 

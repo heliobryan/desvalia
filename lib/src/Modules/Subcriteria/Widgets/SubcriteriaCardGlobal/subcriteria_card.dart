@@ -13,12 +13,15 @@ class SubcriteriaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String name = subcriteria['name'] ?? 'Sem Nome';
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 550),
+          constraints: BoxConstraints(
+            maxWidth: screenWidth < 600 ? screenWidth * 0.9 : 550,
+          ),
           child: OutlinedButton(
             onPressed: onPressed,
             style: OutlinedButton.styleFrom(
@@ -36,6 +39,7 @@ class SubcriteriaCard extends StatelessWidget {
             ),
             child: SizedBox(
               height: 70,
+              width: double.infinity,
               child: Center(
                 child: Text(
                   name.toUpperCase(),
@@ -45,6 +49,8 @@ class SubcriteriaCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ),

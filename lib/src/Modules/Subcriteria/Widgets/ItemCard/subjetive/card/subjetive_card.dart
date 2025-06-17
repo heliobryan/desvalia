@@ -11,6 +11,9 @@ class SubjetiveCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardMaxWidth = screenWidth * 0.9; // usa 90% da largura da tela
+
     return FutureBuilder<String?>(
       future: SharedPreferences.getInstance()
           .then((prefs) => prefs.getString('token')),
@@ -44,7 +47,9 @@ class SubjetiveCard extends StatelessWidget {
             final athletes = snap.data!;
 
             return Container(
-              width: 550,
+              constraints: BoxConstraints(
+                maxWidth: cardMaxWidth,
+              ),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
@@ -73,8 +78,9 @@ class SubjetiveCard extends StatelessWidget {
 
                     return SubjetiveCardAthletesInfo(athleteName: name);
                   }),
+                  const SizedBox(height: 20),
                   SizedBox(
-                    width: 450,
+                    width: cardMaxWidth.clamp(200, 450),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0XFFA6B92E),

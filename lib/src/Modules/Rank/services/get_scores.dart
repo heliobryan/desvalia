@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class GetScores {
   static Future<List<Map<String, dynamic>>> fetchAthletes(String token) async {
-    final url = Uri.parse(
-        'https://api.des.versatecnologia.com.br/api/participants?page=1&getAll=1');
+    final url =
+        Uri.parse('${dotenv.env['API_HOST']}api/participants?page=1&getAll=1');
 
     final response = await http.get(
       url,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,7 +15,7 @@ class HomeServices {
 
   Future<Map<String, dynamic>?> userInfo(String? token) async {
     try {
-      var url = Uri.parse('https://api.des.versatecnologia.com.br/api/user');
+      var url = Uri.parse('${dotenv.env['API_HOST']}api/user');
       var restAnswer = await http.get(
         url,
         headers: {

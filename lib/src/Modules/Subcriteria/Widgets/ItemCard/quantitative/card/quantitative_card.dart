@@ -11,6 +11,8 @@ class QuantitativeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return FutureBuilder<String?>(
       future: SharedPreferences.getInstance()
           .then((prefs) => prefs.getString('token')),
@@ -25,7 +27,8 @@ class QuantitativeCard extends StatelessWidget {
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
               return const Center(
-                  child: CircularProgressIndicator(color: Color(0XFFA6B92E)));
+                child: CircularProgressIndicator(color: Color(0XFFA6B92E)),
+              );
             }
 
             if (snap.hasError || !snap.hasData) {
@@ -34,6 +37,7 @@ class QuantitativeCard extends StatelessWidget {
                     style: TextStyle(color: Colors.white)),
               );
             }
+
             if (snap.data!.isEmpty) {
               return const Center(
                 child: Text('Nenhum atleta encontrado',
@@ -44,8 +48,9 @@ class QuantitativeCard extends StatelessWidget {
             final athletes = snap.data!;
 
             return Container(
-              width: 550,
+              width: screenWidth < 600 ? double.infinity : 550,
               padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
@@ -62,6 +67,7 @@ class QuantitativeCard extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 20,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
                   ...athletes.map((athlete) {

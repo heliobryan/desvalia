@@ -11,7 +11,11 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 500;
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           athleteName.toUpperCase(),
@@ -20,8 +24,10 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
             fontSize: 20,
           ),
         ),
+        const SizedBox(height: 10),
         Container(
-          width: 450,
+          width: isSmallScreen ? double.infinity : screenWidth * 0.8,
+          height: 1,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
@@ -29,47 +35,50 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
               width: 1,
             ),
           ),
-          height: 0,
         ),
         const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildTextFieldContainer(),
-            const SizedBox(width: 10),
-            _buildTextFieldContainer(),
-            const SizedBox(width: 10),
-            _buildTextFieldContainer(),
-          ],
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 10,
+          children:
+              List.generate(3, (_) => _buildTextFieldContainer(screenWidth)),
         ),
         const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildTextFieldContainer() {
-    return Container(
-      width: 150,
+  Widget _buildTextFieldContainer(double screenWidth) {
+    final double width = screenWidth < 400
+        ? screenWidth * 0.8
+        : screenWidth < 600
+            ? screenWidth * 0.4
+            : 150;
+
+    return SizedBox(
+      width: width,
       height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0XFFA6B92E),
-          width: 1,
-        ),
-      ),
-      child: Center(
-        child: TextField(
-          style: secondFont.bold(
-            color: Colors.white,
-            fontSize: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0XFFA6B92E),
+            width: 1,
           ),
-          textAlign: TextAlign.center,
-          cursorColor: const Color(0XFFA6B92E),
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.white54),
+        ),
+        child: Center(
+          child: TextField(
+            style: secondFont.bold(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+            cursorColor: const Color(0XFFA6B92E),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintStyle: TextStyle(color: Colors.white54),
+            ),
           ),
         ),
       ),

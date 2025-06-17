@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer';
@@ -10,7 +11,7 @@ Future<List> getSubcriteria({required int criterionId}) async {
     log('Token: $token');
 
     var url = Uri.parse(
-        'https://api.des.versatecnologia.com.br/api/subcriteria?page=1&perPage=1000');
+        '${dotenv.env['API_HOST']}api/subcriteria?page=1&perPage=1000');
 
     var restAwnser = await http.get(url, headers: {
       'Authorization': 'Bearer $token',

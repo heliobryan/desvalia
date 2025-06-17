@@ -35,7 +35,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final team = athlete['team']?['name'] ?? 'Time';
     final category = athlete['category'] ?? 'Instituição';
     final photo = user['photo_temp'] ?? '';
-    // ignore: unused_local_variable
     final participantID = athlete['id'] ?? '';
 
     return Scaffold(

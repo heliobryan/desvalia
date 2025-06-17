@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
@@ -105,10 +107,9 @@ class _AthletesPageState extends State<AthletesPage> {
               begin: Alignment.bottomLeft,
               end: Alignment.topRight,
               colors: [
-                Colors.black,
-                Colors.black,
-                // ignore: deprecated_member_use
                 const Color(0xFF42472B).withOpacity(0.5),
+                const Color(0xFF42472B).withOpacity(0.5),
+                Colors.black,
               ],
             ),
           ),
@@ -149,15 +150,23 @@ class _AthletesPageState extends State<AthletesPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const FilterGender(),
-                    const SizedBox(width: 10),
-                    FilterCategory(
-                      selectedCategory: selectedCategory,
-                      onCategorySelected:
-                          filterAthletesByCategory, //FILTRO DE CATEGORIA DO ATLETA
+                    Flexible(
+                      flex: 3, // peso proporcional, você pode ajustar
+                      child: const FilterGender(),
                     ),
                     const SizedBox(width: 10),
-                    const TeamFilter(),
+                    Flexible(
+                      flex: 4,
+                      child: FilterCategory(
+                        selectedCategory: selectedCategory,
+                        onCategorySelected: filterAthletesByCategory,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      flex: 3,
+                      child: const TeamFilter(),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 30),

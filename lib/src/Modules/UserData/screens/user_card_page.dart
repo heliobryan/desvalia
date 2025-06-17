@@ -1,11 +1,15 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+import 'package:share_plus/share_plus.dart';
 import 'dart:developer';
-
-import 'package:des/src/GlobalConstants/font.dart';
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/Modules/UserData/services/get_user_data.dart';
 import 'package:des/src/Modules/UserData/widgets/player_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 
 class UserCardPage extends StatefulWidget {
   final int participantID;
@@ -17,12 +21,33 @@ class UserCardPage extends StatefulWidget {
 }
 
 class _UserCardPageState extends State<UserCardPage> {
+  final GlobalKey _cardKey = GlobalKey();
+
   late Future<Map<String, dynamic>> _participantInfoFuture;
   @override
   void initState() {
     super.initState();
     _participantInfoFuture =
         GetParticipantInfo.fetchBasicInfo(widget.participantID);
+  }
+
+  Future<void> _shareCard() async {
+    try {
+      RenderRepaintBoundary boundary =
+          _cardKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+      final directory = await getTemporaryDirectory();
+      final imagePath = File('${directory.path}/player_card.png');
+      await imagePath.writeAsBytes(pngBytes);
+
+      final xFile = XFile(imagePath.path);
+
+      await Share.shareXFiles([xFile], text: 'Confira esse jogador!');
+    } catch (e) {
+      print("Erro ao compartilhar: $e");
+    }
   }
 
   @override
@@ -73,7 +98,6 @@ class _UserCardPageState extends State<UserCardPage> {
               colors: [
                 Colors.black,
                 Colors.black,
-                // ignore: deprecated_member_use
                 const Color(0xFF42472B).withOpacity(0.5),
               ],
             ),
@@ -133,19 +157,30 @@ class _UserCardPageState extends State<UserCardPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const SizedBox(height: 20),
-                          PlayerCard(
-                            position: position,
-                            participantID: widget.participantID,
-                            name: name,
-                            lastName: lastName,
-                            stats: Map<String, dynamic>.from(stats),
-                            photo: photo,
-                            overall: overall,
+                          Center(
+                            child: SingleChildScrollView(
+                              child: RepaintBoundary(
+                                key: _cardKey,
+                                child: PlayerCard(
+                                  position: position,
+                                  participantID: widget.participantID,
+                                  name: name,
+                                  lastName: lastName,
+                                  stats: Map<String, dynamic>.from(stats),
+                                  photo: photo,
+                                  overall: overall,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       );
                     }
                   },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share, color: Colors.white, size: 30),
+                  onPressed: _shareCard,
                 ),
               ],
             ),

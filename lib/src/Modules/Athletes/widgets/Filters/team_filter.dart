@@ -11,22 +11,31 @@ class TeamFilter extends StatefulWidget {
 class _TeamFilterState extends State<TeamFilter> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 35,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0XFFb0c32e), width: 1),
-        borderRadius: BorderRadius.circular(8),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: 100,
+        maxWidth: 200,
+        minHeight: 35,
+        maxHeight: 35,
       ),
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.transparent),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0XFFb0c32e), width: 1),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          "ESCOLA FLAMENGO",
-          style: secondFont.bold(color: Colors.white),
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Colors.transparent),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "ESCOLA FLAMENGO",
+              style: secondFont.bold(color: Colors.white),
+            ),
+          ),
+          onPressed: () {},
         ),
-        onPressed: () {},
       ),
     );
   }

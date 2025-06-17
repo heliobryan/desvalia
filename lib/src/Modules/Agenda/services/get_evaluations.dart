@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class GetEvaluations {
   static Future<List<Map<String, dynamic>>> fetchEvaluations(
       String token) async {
     final url = Uri.parse(
-        'https://api.des.versatecnologia.com.br/api/evaluations?page=1&perPage=1000');
+        '${dotenv.env['API_HOST']}api/evaluations?page=1&perPage=1000');
 
     final response = await http.get(
       url,

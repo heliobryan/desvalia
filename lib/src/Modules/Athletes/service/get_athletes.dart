@@ -1,10 +1,13 @@
+// ignore_for_file: implementation_imports, non_constant_identifier_names
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GetAthletes {
   static Future<List<Map<String, dynamic>>> fetchAthletes(String token) async {
-    final url = Uri.parse(
-        'https://api.des.versatecnologia.com.br/api/participants?page=1&getAll=1');
+    final url =
+        Uri.parse('${dotenv.env['API_HOST']}api/participants?page=1&getAll=1');
 
     final response = await http.get(
       url,

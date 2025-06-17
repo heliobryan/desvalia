@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<bool> userLogin(String email, String password) async {
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  var url = Uri.parse('https://api.des.versatecnologia.com.br/api/login');
+  var url = Uri.parse('${dotenv.env['API_HOST']}api/login');
 
   var restAwnser = await http.post(
     url,

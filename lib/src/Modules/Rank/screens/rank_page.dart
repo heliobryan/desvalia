@@ -169,14 +169,23 @@ class _RankPageState extends State<RankPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const FilterGender(),
-                    const SizedBox(width: 10),
-                    FilterCategory(
-                      selectedCategory: selectedCategory,
-                      onCategorySelected: filterAthletesByCategory,
+                    Flexible(
+                      flex: 3,
+                      child: const FilterGender(),
                     ),
                     const SizedBox(width: 10),
-                    const TeamFilter(),
+                    Flexible(
+                      flex: 4,
+                      child: FilterCategory(
+                        selectedCategory: selectedCategory,
+                        onCategorySelected: filterAthletesByCategory,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      flex: 3,
+                      child: const TeamFilter(),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 30),
