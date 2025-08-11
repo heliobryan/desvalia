@@ -204,14 +204,16 @@ class _SubcriteriaMentalPageState extends State<SubcriteriaMentalPage> {
                                           child: QuantitativeCard(
                                             itemName: item['name'],
                                             itemId: item[
-                                                'id'], // <-- aqui o id do item para o submit funcionar
+                                                'id'],
                                           ),
                                         )),
                                     ...subjectiveItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: SubjetiveCard(
-                                              itemName: item['name']),
+                                            itemName: item['name'],
+                                            itemId: item['id'],
+                                          ),
                                         )),
                                     ...questionnaireItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(

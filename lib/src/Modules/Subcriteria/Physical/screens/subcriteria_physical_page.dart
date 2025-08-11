@@ -213,7 +213,9 @@ class _SubcriteriaPhysicalPageState extends State<SubcriteriaPhysicalPage> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: SubjetiveCard(
-                                              itemName: item['name']),
+                                            itemName: item['name'],
+                                            itemId: item['id'],
+                                          ),
                                         )),
                                     ...questionnaireItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(

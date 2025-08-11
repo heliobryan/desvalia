@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:developer';
 import 'package:des/src/GlobalConstants/font.dart';
-import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/measurable/services/measurable_service.dart';
+import 'package:des/src/Modules/Subcriteria/Services/send_values.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/measurable/widgets/measurable_card_athletes_info.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,7 +24,10 @@ class _MeasurableCardState extends State<MeasurableCard> {
   final Map<String, List<TextEditingController>> controllersMap = {};
   List<Map<String, dynamic>> filteredAthletes = [];
   bool isLoading = true;
-  late MeasurableService measurableService;
+  late SendValues measurableService;
+
+  // Cache estático para a sessão - mantém os dados enquanto o app rodar
+  static List<Map<String, dynamic>>? _cachedAthletes;
 
   // Usado para atualizar o texto do botão dinamicamente
   final ValueNotifier<String> _buttonTextNotifier =
@@ -36,8 +39,16 @@ class _MeasurableCardState extends State<MeasurableCard> {
     SharedPreferences.getInstance().then((prefs) {
       final token = prefs.getString('token');
       if (token != null && mounted) {
-        measurableService = MeasurableService(token);
-        _loadAthletes(token);
+        measurableService = SendValues(token);
+        if (_cachedAthletes != null) {
+          // Se temos cache, usa direto
+          filteredAthletes = _cachedAthletes!;
+          isLoading = false;
+          setState(() {});
+        } else {
+          // Senão, carrega da API e salva no cache
+          _loadAthletes(token);
+        }
       }
     });
   }
@@ -47,16 +58,15 @@ class _MeasurableCardState extends State<MeasurableCard> {
     try {
       final filtered = await measurableService.loadFilteredAthletes(token);
       if (!mounted) return;
-      setState(() {
-        filteredAthletes = filtered;
-        isLoading = false;
-      });
+      filteredAthletes = filtered;
+      _cachedAthletes = filtered; // salva no cache da sessão
+      isLoading = false;
+      setState(() {});
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        filteredAthletes = [];
-        isLoading = false;
-      });
+      filteredAthletes = [];
+      isLoading = false;
+      setState(() {});
     }
   }
 
@@ -149,7 +159,6 @@ class _MeasurableCardState extends State<MeasurableCard> {
                     ),
                   ),
                   onPressed: () async {
-                    // Desabilita o botão enquanto envia
                     if (_buttonTextNotifier.value != 'SALVAR AVALIAÇÃO') return;
 
                     final token = await SharedPreferences.getInstance()
@@ -194,7 +203,6 @@ class _MeasurableCardState extends State<MeasurableCard> {
                       return;
                     }
 
-                    // Começa o processo mostrando "Carregando avaliações..."
                     _buttonTextNotifier.value = 'Carregando avaliações...';
 
                     bool allSuccess = true;
@@ -252,7 +260,6 @@ class _MeasurableCardState extends State<MeasurableCard> {
                         allSuccess = false;
                       }
 
-                      // Pequena pausa pra o usuário ler o texto antes de continuar
                       await Future.delayed(const Duration(milliseconds: 700));
                     }
 

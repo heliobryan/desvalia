@@ -1,3 +1,4 @@
+// measurable_card_athletes_info.dart
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,10 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
   final TextEditingController controller1;
   final TextEditingController controller2;
   final TextEditingController controller3;
+  final bool validation1;
+  final bool validation2;
+  final bool validation3;
+  final bool enabled;
 
   const MeasurableCardAthletesInfo({
     super.key,
@@ -13,6 +18,10 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
     required this.controller1,
     required this.controller2,
     required this.controller3,
+    this.validation1 = false,
+    this.validation2 = false,
+    this.validation3 = false,
+    this.enabled = true,
   });
 
   @override
@@ -48,9 +57,9 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _buildTextFieldContainer(screenWidth, controller1),
-            _buildTextFieldContainer(screenWidth, controller2),
-            _buildTextFieldContainer(screenWidth, controller3),
+            _buildTextFieldContainer(screenWidth, controller1, validation1),
+            _buildTextFieldContainer(screenWidth, controller2, validation2),
+            _buildTextFieldContainer(screenWidth, controller3, validation3),
           ],
         ),
         const SizedBox(height: 20),
@@ -59,7 +68,7 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
   }
 
   Widget _buildTextFieldContainer(
-      double screenWidth, TextEditingController controller) {
+      double screenWidth, TextEditingController controller, bool isError) {
     final double width = screenWidth < 400
         ? screenWidth * 0.8
         : screenWidth < 600
@@ -73,9 +82,10 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           border: Border.all(
-            color: const Color(0XFFA6B92E),
-            width: 1,
+            color: isError ? Colors.red : const Color(0XFFA6B92E),
+            width: 2,
           ),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Center(
           child: TextField(
@@ -87,6 +97,7 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
             cursorColor: const Color(0XFFA6B92E),
+            enabled: enabled,
             decoration: const InputDecoration(
               border: InputBorder.none,
               hintStyle: TextStyle(color: Colors.white54),

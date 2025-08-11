@@ -1,51 +1,44 @@
-import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:des/src/Commom/rest_client.dart';
 
 class GetParticipantInfo {
-  static Future<Map<String, dynamic>> fetchBasicInfo(int participantID) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
+  final RestClient restClient;
 
-    final headers = {
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    };
+  GetParticipantInfo(this.restClient);
 
-    final url = Uri.parse(
-      '${dotenv.env['API_HOST']}api/participants/$participantID',
-    );
+  Future<Map<String, dynamic>> fetchBasicInfo(int participantID) async {
+    try {
+      final response = await restClient.get('api/participants/$participantID');
 
-    final response = await http.get(url, headers: headers);
+      if (response.statusCode != 200) {
+        log('Erro ao buscar dados do participante: ${response.statusCode}');
+        throw Exception(
+            'Erro ao buscar dados do participante: ${response.statusCode}');
+      }
 
-    log('Status da resposta HTTP: ${response.statusCode}');
-    if (response.statusCode != 200) {
-      log('Erro ao buscar dados do participante: ${response.statusCode}');
-      throw Exception(
-          'Erro ao buscar dados do participante: ${response.statusCode}');
+      final data = response.data;
+
+      final Map<String, dynamic> participant = {
+        'id': data['id'],
+        'name': data['user']?['name'] ?? 'Sem nome',
+        'last_name': data['user']?['last_name'] ?? 'Sem sobrenome',
+        'photo': data['user']?['photo_temp'],
+        'team': data['team'],
+        'position': data['position'],
+        'category': data['category'],
+        'overall': data['overall'],
+        'stats': data['stats'] ?? {},
+      };
+
+      log('--- Dados processados para retorno ---');
+      participant.forEach((key, value) {
+        log('$key = $value');
+      });
+
+      return participant;
+    } catch (e) {
+      log('Erro em fetchBasicInfo: $e');
+      rethrow;
     }
-
-    final data = jsonDecode(response.body);
-
-    final Map<String, dynamic> participant = {
-      'id': data['id'],
-      'name': data['user']?['name'] ?? 'Sem nome',
-      'last_name': data['user']?['last_name'] ?? 'Sem sobrenome',
-      'photo': data['user']?['photo_temp'],
-      'team': data['team'],
-      'position': data['position'],
-      'category': data['category'],
-      "overall": data['overall'],
-      'stats': data['stats'] ?? {},
-    };
-
-    log('--- Dados processados para retorno ---');
-    participant.forEach((key, value) {
-      log('$key = $value');
-    });
-
-    return participant;
   }
 }

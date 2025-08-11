@@ -212,7 +212,9 @@ class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: SubjetiveCard(
-                                              itemName: item['name']),
+                                            itemName: item['name'],
+                                            itemId: item['id'],
+                                          ),
                                         )),
                                     ...questionnaireItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(

@@ -1,62 +1,110 @@
+// measurable_card_athletes_info.dart
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:flutter/material.dart';
 
 class QuantitativeCardAthletesInfo extends StatelessWidget {
   final String athleteName;
-  final List<TextEditingController> controllers;
+  final TextEditingController controller1;
+  final TextEditingController controller2;
+  final TextEditingController controller3;
+  final bool validation1;
+  final bool validation2;
+  final bool validation3;
+  final bool enabled;
 
   const QuantitativeCardAthletesInfo({
     super.key,
     required this.athleteName,
-    required this.controllers,
+    required this.controller1,
+    required this.controller2,
+    required this.controller3,
+    this.validation1 = false,
+    this.validation2 = false,
+    this.validation3 = false,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      double fieldWidth = (constraints.maxWidth - 20) / 3;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 500;
 
-      return Column(
-        children: [
-          Text(
-            athleteName.toUpperCase(),
-            style: secondFont.bold(color: Colors.white, fontSize: 20),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          athleteName.toUpperCase(),
+          style: secondFont.bold(
+            color: Colors.white,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: isSmallScreen ? double.infinity : screenWidth * 0.8,
+          height: 1,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0XFFA6B92E),
+              width: 1,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            _buildTextFieldContainer(screenWidth, controller1, validation1),
+            _buildTextFieldContainer(screenWidth, controller2, validation2),
+            _buildTextFieldContainer(screenWidth, controller3, validation3),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildTextFieldContainer(
+      double screenWidth, TextEditingController controller, bool isError) {
+    final double width = screenWidth < 400
+        ? screenWidth * 0.8
+        : screenWidth < 600
+            ? screenWidth * 0.4
+            : 150;
+
+    return SizedBox(
+      width: width,
+      height: 50,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isError ? Colors.red : const Color(0XFFA6B92E),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Center(
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            style: secondFont.bold(
+              color: Colors.white,
+              fontSize: 16,
+            ),
             textAlign: TextAlign.center,
+            cursorColor: const Color(0XFFA6B92E),
+            enabled: enabled,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintStyle: TextStyle(color: Colors.white54),
+            ),
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: controllers
-                .map((c) => Container(
-                      width: fieldWidth.clamp(100, 200),
-                      height: 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: const Color(0XFFA6B92E), width: 1),
-                      ),
-                      child: Center(
-                        child: TextField(
-                          controller: c,
-                          style: secondFont.bold(
-                              color: Colors.white, fontSize: 16),
-                          textAlign: TextAlign.center,
-                          cursorColor: const Color(0XFFA6B92E),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(color: Colors.white54),
-                          ),
-                        ),
-                      ),
-                    ))
-                .toList(),
-          ),
-          const SizedBox(height: 20),
-        ],
-      );
-    });
+        ),
+      ),
+    );
   }
 }

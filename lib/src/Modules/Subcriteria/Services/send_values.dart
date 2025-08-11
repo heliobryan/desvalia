@@ -1,19 +1,18 @@
 // measurable_service.dart
+// measurable_service.dart
 import 'dart:developer';
-
 import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/Modules/Subcriteria/Services/fetch_evaluations.dart';
 import 'package:des/src/Modules/Subcriteria/Services/get_participants.dart';
 
-class MeasurableService {
+class SendValues {
   final RestClient restClient;
   final EvaluationService evaluationService;
 
-  MeasurableService(String token)
+  SendValues(String token)
       : restClient = RestClient(token: token),
         evaluationService = EvaluationService(RestClient(token: token));
 
-  /// Busca atletas filtrados com avaliação
   Future<List<Map<String, dynamic>>> loadFilteredAthletes(String token) async {
     try {
       final athletes = await GetParticipants.fetchAthletes(token);
@@ -42,7 +41,6 @@ class MeasurableService {
     }
   }
 
-  /// Envia os scores para a API, retorna true se todos foram enviados com sucesso
   Future<bool> submitScores({
     required List<Map<String, dynamic>> results,
     required List<Map<String, dynamic>> filteredAthletes,
