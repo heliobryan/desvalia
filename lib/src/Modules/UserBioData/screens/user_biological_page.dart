@@ -1,12 +1,14 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:developer';
 
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/Modules/UserAvaliations/services/get_participant_evaluation.dart';
 import 'package:des/src/Modules/UserBioData/widgets/user_data_card.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserBiologicalPage extends StatefulWidget {
   final int participantID;
@@ -27,8 +29,18 @@ class _UserBiologicalPageState extends State<UserBiologicalPage> {
 
   Future<List<Map<String, dynamic>>> loadJudgments() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token não encontrado');
+      }
+
+      final restClient = RestClient(token: token);
+      final evaluationsFetcher = GetParticipantEvaluations(restClient);
+
       final judgments =
-          await GetParticipantEvaluations.fetchJudgments(widget.participantID);
+          await evaluationsFetcher.fetchJudgments(widget.participantID);
 
       final filteredJudgments = judgments.where((judgment) {
         final item = judgment['item'];

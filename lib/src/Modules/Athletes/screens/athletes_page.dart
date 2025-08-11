@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:developer';
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
@@ -35,10 +36,15 @@ class _AthletesPageState extends State<AthletesPage> {
 
   Future<void> loadAthletes() async {
     final prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
-    if (token != null) {
+    final token = prefs.getString('token');
+
+    if (token != null && token.isNotEmpty) {
       try {
-        final data = await GetAthletes.fetchAthletes(token!);
+        final restClient = RestClient(token: token);
+        final athletesService = GetAthletesService(restClient);
+
+        final data = await athletesService.fetchAthletes();
+
         setState(() {
           athleteList = data;
           filteredAthleteList = data;

@@ -1,26 +1,33 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:des/src/Commom/rest_client.dart';
 
-class GetEvaluations {
-  static Future<List<Map<String, dynamic>>> fetchEvaluations(
-      String token) async {
-    final url = Uri.parse(
-        '${dotenv.env['API_HOST']}api/evaluations?page=1&perPage=1000');
+class GetEvaluationsService {
+  final RestClient _restClient;
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
+  GetEvaluationsService(this._restClient);
 
-    if (response.statusCode == 200) {
-      final List evaluations = jsonDecode(response.body)['data'];
-      return evaluations.cast<Map<String, dynamic>>();
-    } else {
-      throw Exception('Erro ao buscar avaliações: ${response.statusCode}');
+  Future<List<Map<String, dynamic>>> fetchEvaluations(
+      {int page = 1, int perPage = 1000}) async {
+    try {
+      final response = await _restClient.get(
+        'api/evaluations',
+        queryParameters: {
+          'page': page,
+          'perPage': perPage,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map<String, dynamic> && data['data'] is List) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        } else {
+          throw Exception('Formato inesperado da resposta da API');
+        }
+      } else {
+        throw Exception('Erro ao buscar avaliações: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Erro ao buscar avaliações: $e');
     }
   }
 }

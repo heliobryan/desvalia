@@ -138,7 +138,6 @@ class _SubcriteriaTacticalPageState extends State<SubcriteriaTacticalPage> {
                     }
 
                     final subCriteriaList = snapshot.data ?? [];
-
                     return ListView.builder(
                       padding: const EdgeInsets.only(bottom: 40),
                       itemCount: subCriteriaList.length,
@@ -198,13 +197,17 @@ class _SubcriteriaTacticalPageState extends State<SubcriteriaTacticalPage> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: MeasurableCard(
-                                              itemName: item['name']),
+                                              itemName: item['name'],
+                                              itemId: item["id"]),
                                         )),
                                     ...quantitativeItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: QuantitativeCard(
-                                              itemName: item['name']),
+                                            itemName: item['name'],
+                                            itemId: item[
+                                                'id'], // <-- aqui o id do item para o submit funcionar
+                                          ),
                                         )),
                                     ...subjectiveItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(

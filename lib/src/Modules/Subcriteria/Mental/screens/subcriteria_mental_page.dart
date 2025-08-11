@@ -195,13 +195,17 @@ class _SubcriteriaMentalPageState extends State<SubcriteriaMentalPage> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: MeasurableCard(
-                                              itemName: item['name']),
+                                              itemName: item['name'],
+                                              itemId: item["id"]),
                                         )),
                                     ...quantitativeItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: QuantitativeCard(
-                                              itemName: item['name']),
+                                            itemName: item['name'],
+                                            itemId: item[
+                                                'id'], // <-- aqui o id do item para o submit funcionar
+                                          ),
                                         )),
                                     ...subjectiveItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(

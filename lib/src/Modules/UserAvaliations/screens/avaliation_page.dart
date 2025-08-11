@@ -27,11 +27,20 @@ class _AvaliationPageState extends State<AvaliationPage> {
 
   Future<List<Map<String, dynamic>>> loadJudgments() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token não encontrado');
+      }
+
+      final restClient = RestClient(token: token);
+      final evaluationsFetcher = GetParticipantEvaluations(restClient);
+
       final judgments =
-          await GetParticipantEvaluations.fetchJudgments(widget.participantID);
+          await evaluationsFetcher.fetchJudgments(widget.participantID);
 
       for (var judgment in judgments) {
-        // ignore: unused_local_variable
         final measurement = judgment['item']['measurement_unit'] ?? "";
         final id = judgment['id'];
         final score = judgment['score'];

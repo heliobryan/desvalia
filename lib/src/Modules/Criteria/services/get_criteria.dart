@@ -1,32 +1,35 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:des/src/Commom/rest_client.dart';
 import 'dart:developer';
-import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List> getCriteria() async {
-  try {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    final token = sharedPreferences.getString('token');
-    log('Token: $token');
+class CriteriaService {
+  final RestClient _restClient;
 
-    var url =
-        Uri.parse('${dotenv.env['API_HOST']}api/criteria?page=1&perPage=1000');
+  CriteriaService(this._restClient);
 
-    var restAwnser = await http.get(url, headers: {
-      'Authorization': 'Bearer $token',
-    });
+  Future<List<dynamic>> getCriteria({int page = 1, int perPage = 1000}) async {
+    try {
+      final response = await _restClient.get(
+        'api/criteria',
+        queryParameters: {
+          'page': page,
+          'perPage': perPage,
+        },
+      );
 
-    if (restAwnser.statusCode == 200) {
-      final decode = jsonDecode(restAwnser.body);
-      final data = decode['data'];
-      return data;
-    } else {
-      log('Erro statusCode: ${restAwnser.statusCode}');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map<String, dynamic> && data['data'] is List) {
+          return data['data'] as List<dynamic>;
+        } else {
+          throw Exception('Formato inesperado da resposta da API');
+        }
+      } else {
+        log('Erro statusCode: ${response.statusCode}');
+        throw Exception('Erro ao buscar critérios');
+      }
+    } catch (e) {
+      log('Erro em getCriteria: $e');
       throw Exception('Erro ao buscar critérios');
     }
-  } catch (e) {
-    log('Erro em getCriteria: $e');
-    throw Exception('Erro ao buscar critérios');
   }
 }

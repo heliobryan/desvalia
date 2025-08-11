@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, prefer_const_constructors, unused_local_variable, avoid_print, deprecated_member_use
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalConstants/textfield.dart';
@@ -67,7 +68,10 @@ class _LoginScreenState extends State<LoginScreen>
       isLoading = true;
     });
 
-    bool success = await userLogin(
+    final restClient = RestClient();
+    final authService = AuthService(restClient);
+
+    bool success = await authService.userLogin(
       _emailController.text,
       _passwordController.text,
     );

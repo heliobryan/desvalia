@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/Modules/Login/screens/login_page.dart';
 import 'package:flutter/material.dart';
@@ -15,37 +17,50 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _startAnimation();
+
+    // Pré-carrega o logo e o background antes de animar
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await precacheImage(const AssetImage(Assets.logoDes), context);
+      await precacheImage(const AssetImage(Assets.background), context);
+
+      if (mounted) {
+        setState(() => _opacity = 1.0);
+      }
+
+      _startNavigationTimer();
+    });
   }
 
-  void _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _opacity = 1.0;
-    });
-
+  Future<void> _startNavigationTimer() async {
+    // Aguarda tempo total da animação e exibição
     await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+
     _navigateToLogin();
   }
 
   void _navigateToLogin() {
-    Navigator.pushReplacement(
-      context,
+    Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 800),
-        pageBuilder: (_, animation, secondaryAnimation) => const LoginScreen(),
-        transitionsBuilder: (_, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
+        pageBuilder: (_, animation, __) => const LoginScreen(),
+        transitionsBuilder: (_, animation, __, child) {
+          final offsetAnimation = Tween<Offset>(
+            begin: const Offset(0.0, 1.0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeInOut)).animate(animation);
 
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          var offsetAnimation = animation.drive(tween);
+          final fadeAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          );
 
           return SlideTransition(
             position: offsetAnimation,
-            child: child,
+            child: FadeTransition(
+              opacity: fadeAnimation,
+              child: child,
+            ),
           );
         },
       ),
@@ -72,9 +87,12 @@ class _SplashScreenState extends State<SplashScreen> {
             child: AnimatedOpacity(
               opacity: _opacity,
               duration: const Duration(seconds: 2),
+              curve: Curves.easeInOut,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [Image.asset(Assets.logoDes)],
+                children: [
+                  Image.asset(Assets.logoDes),
+                ],
               ),
             ),
           ),

@@ -3,17 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  await dotenv.load(fileName: '.env');
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const DessApp());
-  await dotenv.load(fileName: ".env");
 }
 
-class DessApp extends StatelessWidget {
+class DessApp extends StatefulWidget {
   const DessApp({super.key});
 
   @override
+  State<DessApp> createState() => _DessAppState();
+}
+
+class _DessAppState extends State<DessApp> {
+  @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );

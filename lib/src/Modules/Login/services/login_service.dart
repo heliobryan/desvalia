@@ -1,35 +1,45 @@
-// ignore_for_file: avoid_print
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'dart:developer';
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<bool> userLogin(String email, String password) async {
-  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  var url = Uri.parse('${dotenv.env['API_HOST']}api/login');
+class AuthService {
+  final RestClient _restClient;
 
-  var restAwnser = await http.post(
-    url,
-    body: {
-      'email': email,
-      'password': password,
-    },
-  );
+  AuthService(this._restClient);
 
-  if (restAwnser.statusCode == 200) {
-    final decode = jsonDecode(restAwnser.body);
-    String token = decode['token'];
+  Future<bool> userLogin(String email, String password) async {
+    try {
+      final response = await _restClient.post(
+        'api/login',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
 
-    print('Token recebido da API: $token');
+      if (response.statusCode == 200) {
+        final data = response.data;
 
-    await sharedPreferences.setString(
-      'token',
-      token,
-    );
+        final token = data['token'] as String?;
 
-    return true;
-  } else {
-    print('Erro na resposta da API: ${restAwnser.body}');
-    return false;
+        if (token != null && token.isNotEmpty) {
+          final sharedPreferences = await SharedPreferences.getInstance();
+          await sharedPreferences.setString('token', token);
+
+          log('Token recebido da API: $token');
+
+          return true;
+        } else {
+          log('Token não encontrado na resposta da API');
+          return false;
+        }
+      } else {
+        log('Erro na resposta da API: ${response.statusCode} - ${response.data}');
+        return false;
+      }
+    } catch (e) {
+      log('Erro no login do usuário: $e');
+      return false;
+    }
   }
 }

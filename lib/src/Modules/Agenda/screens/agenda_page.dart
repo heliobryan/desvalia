@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:convert';
 import 'dart:developer';
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/Modules/Agenda/services/get_evaluations.dart';
 import 'package:des/src/Modules/Agenda/widgets/agenda_card.dart';
 import 'package:des/src/Modules/Agenda/widgets/agenda_month_changer.dart';
@@ -38,12 +39,18 @@ class _AgendaPageState extends State<AgendaPage> {
 
   Future<void> initPage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
+    final token = prefs.getString('token');
 
     await userInfo();
-    if (token != null) {
+
+    if (token != null && token.isNotEmpty) {
       try {
-        final evaluations = await GetEvaluations.fetchEvaluations(token!);
+        final restClient = RestClient(token: token);
+
+        final evaluationsService = GetEvaluationsService(restClient);
+
+        final evaluations = await evaluationsService.fetchEvaluations();
+
         setState(() {
           eventList = evaluations;
           filteredEventList = evaluations;

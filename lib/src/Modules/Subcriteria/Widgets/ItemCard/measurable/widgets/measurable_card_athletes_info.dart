@@ -3,10 +3,16 @@ import 'package:flutter/material.dart';
 
 class MeasurableCardAthletesInfo extends StatelessWidget {
   final String athleteName;
+  final TextEditingController controller1;
+  final TextEditingController controller2;
+  final TextEditingController controller3;
 
   const MeasurableCardAthletesInfo({
     super.key,
     required this.athleteName,
+    required this.controller1,
+    required this.controller2,
+    required this.controller3,
   });
 
   @override
@@ -41,15 +47,19 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
           alignment: WrapAlignment.center,
           spacing: 10,
           runSpacing: 10,
-          children:
-              List.generate(3, (_) => _buildTextFieldContainer(screenWidth)),
+          children: [
+            _buildTextFieldContainer(screenWidth, controller1),
+            _buildTextFieldContainer(screenWidth, controller2),
+            _buildTextFieldContainer(screenWidth, controller3),
+          ],
         ),
         const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildTextFieldContainer(double screenWidth) {
+  Widget _buildTextFieldContainer(
+      double screenWidth, TextEditingController controller) {
     final double width = screenWidth < 400
         ? screenWidth * 0.8
         : screenWidth < 600
@@ -69,6 +79,8 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
         ),
         child: Center(
           child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
             style: secondFont.bold(
               color: Colors.white,
               fontSize: 16,

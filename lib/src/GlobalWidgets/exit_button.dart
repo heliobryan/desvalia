@@ -43,7 +43,7 @@ class _ExitButtonState extends State<ExitButton> {
                 ),
               ),
             ),
-            const SizedBox(width: 10), // Espaçamento entre os botões
+            const SizedBox(width: 10),
             Expanded(
               child: SizedBox(
                 height: 40,

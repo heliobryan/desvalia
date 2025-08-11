@@ -1,3 +1,4 @@
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/Modules/Criteria/services/get_criteria.dart';
@@ -7,6 +8,7 @@ import 'package:des/src/Modules/Subcriteria/Physical/screens/subcriteria_physica
 import 'package:des/src/Modules/Subcriteria/Tactical/screens/subcriteria_tactical_page.dart';
 import 'package:des/src/Modules/Subcriteria/Technical/screens/subcriteria_technical_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CriteriaPage extends StatefulWidget {
   const CriteriaPage({super.key});
@@ -21,7 +23,19 @@ class _CriteriaPageState extends State<CriteriaPage> {
   @override
   void initState() {
     super.initState();
-    _criteriaFuture = getCriteria();
+    _loadCriteria();
+  }
+
+  void _loadCriteria() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final restClient = RestClient(token: token);
+    final criteriaService = CriteriaService(restClient);
+
+    setState(() {
+      _criteriaFuture = criteriaService.getCriteria();
+    });
   }
 
   void navigateToPage(String criteriaName) {

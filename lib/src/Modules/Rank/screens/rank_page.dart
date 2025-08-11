@@ -1,6 +1,7 @@
 // ignore_for_file: unnecessary_null_comparison
 
 import 'dart:developer';
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
@@ -37,24 +38,28 @@ class _RankPageState extends State<RankPage> {
 
   Future<void> loadAthletes() async {
     final prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
-    if (token != null) {
-      try {
-        final data = await GetScores.fetchAthletes(token!);
+    final token = prefs.getString('token');
 
+    if (token != null && token.isNotEmpty) {
+      try {
+        final restClient = RestClient(token: token);
+        final getScoresService = GetScoresService(restClient);
+
+        final data = await getScoresService.fetchAthletes();
         data.sort((a, b) => (b['overall'] ?? 0).compareTo(a['overall'] ?? 0));
 
+        if (!mounted) return;
         setState(() {
           athleteList = data;
           filteredAthleteList = data;
           isLoading = false;
         });
       } catch (e) {
-        log('Erro ao carregar atletas: $e');
+        if (!mounted) return;
         setState(() => isLoading = false);
       }
     } else {
-      log("Token não encontrado.");
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
@@ -152,7 +157,7 @@ class _RankPageState extends State<RankPage> {
               ),
             ),
           ),
-          Center(
+          SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 15),
@@ -160,7 +165,7 @@ class _RankPageState extends State<RankPage> {
                   "RANKING DOS ATLETAS",
                   style: principalFont.bold(
                     fontSize: 20,
-                    color: const Color.fromRGBO(255, 255, 255, 1),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -169,10 +174,7 @@ class _RankPageState extends State<RankPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(
-                      flex: 3,
-                      child: const FilterGender(),
-                    ),
+                    Flexible(flex: 3, child: const FilterGender()),
                     const SizedBox(width: 10),
                     Flexible(
                       flex: 4,
@@ -182,16 +184,16 @@ class _RankPageState extends State<RankPage> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Flexible(
-                      flex: 3,
-                      child: const TeamFilter(),
-                    ),
+                    Flexible(flex: 3, child: const TeamFilter()),
                   ],
                 ),
                 const SizedBox(height: 30),
                 Expanded(
                   child: isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                          color: Color(0XFFA6B92E),
+                        ))
                       : filteredAthleteList.isEmpty
                           ? const Center(
                               child: Text(
@@ -204,7 +206,6 @@ class _RankPageState extends State<RankPage> {
                               itemCount: filteredAthleteList.length,
                               itemBuilder: (context, index) {
                                 final athlete = filteredAthleteList[index];
-
                                 if (athlete == null ||
                                     athlete['user'] == null) {
                                   return const SizedBox.shrink();
@@ -232,7 +233,7 @@ class _RankPageState extends State<RankPage> {
                                 );
                               },
                             ),
-                )
+                ),
               ],
             ),
           ),

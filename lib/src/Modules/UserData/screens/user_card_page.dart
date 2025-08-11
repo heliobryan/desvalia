@@ -1,4 +1,5 @@
 // ignore_for_file: avoid_print, deprecated_member_use
+import 'package:des/src/Commom/rest_client.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:developer';
 import 'dart:io';
@@ -10,6 +11,7 @@ import 'package:des/src/Modules/UserData/widgets/player_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserCardPage extends StatefulWidget {
   final int participantID;
@@ -23,12 +25,30 @@ class UserCardPage extends StatefulWidget {
 class _UserCardPageState extends State<UserCardPage> {
   final GlobalKey _cardKey = GlobalKey();
 
+  late GetParticipantInfo participantInfo;
   late Future<Map<String, dynamic>> _participantInfoFuture;
+
   @override
   void initState() {
     super.initState();
-    _participantInfoFuture =
-        GetParticipantInfo.fetchBasicInfo(widget.participantID);
+    _loadParticipantInfo();
+  }
+
+  Future<void> _loadParticipantInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      return;
+    }
+
+    final restClient = RestClient(token: token);
+    participantInfo = GetParticipantInfo(restClient);
+
+    setState(() {
+      _participantInfoFuture =
+          participantInfo.fetchBasicInfo(widget.participantID);
+    });
   }
 
   Future<void> _shareCard() async {

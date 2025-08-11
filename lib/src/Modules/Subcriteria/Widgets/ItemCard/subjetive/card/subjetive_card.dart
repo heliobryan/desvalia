@@ -12,7 +12,7 @@ class SubjetiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardMaxWidth = screenWidth * 0.9; // usa 90% da largura da tela
+    final cardMaxWidth = screenWidth * 0.9;
 
     return FutureBuilder<String?>(
       future: SharedPreferences.getInstance()
