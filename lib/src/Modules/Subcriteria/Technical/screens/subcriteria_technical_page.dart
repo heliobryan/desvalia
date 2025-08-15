@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:des/src/GlobalConstants/images.dart';
+import 'package:des/src/GlobalWidgets/countdown.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
+import 'package:des/src/GlobalWidgets/timer.dart';
 import 'package:des/src/GlobalWidgets/title_layout_vetor.dart';
 import 'package:des/src/Modules/Subcriteria/Services/get_all_subcriteria.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/measurable/card/measurable_card.dart';
@@ -8,6 +12,7 @@ import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/questionnaire/card/
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/subjetive/card/subjetive_card.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/SubcriteriaCardGlobal/subcriteria_card.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SubcriteriaTechnicalPage extends StatefulWidget {
   const SubcriteriaTechnicalPage({super.key});
@@ -20,11 +25,67 @@ class SubcriteriaTechnicalPage extends StatefulWidget {
 class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
   late Future<List<dynamic>> _subCriteriaFuture;
   Map<String, dynamic>? selectedSubcriteria;
+  final int criterionId = 2;
+
+  bool isLoadingDerivedItems = false;
+  List<dynamic> derivedItems = [];
 
   @override
   void initState() {
     super.initState();
     _subCriteriaFuture = getSubcriteria(criterionId: 2);
+    _loadSubcriteria();
+  }
+
+  void _loadSubcriteria() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cachedSubcriteria_$criterionId';
+
+    final cachedString = prefs.getString(cacheKey);
+    if (cachedString != null) {
+      final List<dynamic> cachedData =
+          List<dynamic>.from(jsonDecode(cachedString));
+      setState(() {
+        _subCriteriaFuture = Future.value(cachedData);
+      });
+      return;
+    }
+
+    setState(() {
+      _subCriteriaFuture =
+          getSubcriteria(criterionId: criterionId).then((data) async {
+        await prefs.setString(cacheKey, jsonEncode(data));
+        return data;
+      });
+    });
+  }
+
+  Future<void> onSelectSubcriteria(Map<String, dynamic> subcriteria) async {
+    final bool alreadySelected = selectedSubcriteria != null &&
+        selectedSubcriteria!['id'] == subcriteria['id'];
+
+    setState(() {
+      if (alreadySelected) {
+        selectedSubcriteria = null;
+        derivedItems = [];
+        isLoadingDerivedItems = false;
+      } else {
+        selectedSubcriteria = subcriteria;
+        isLoadingDerivedItems = true;
+        derivedItems = [];
+      }
+    });
+
+    if (!alreadySelected) {
+      // Simula loading
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
+
+      setState(() {
+        derivedItems = selectedSubcriteria?['items'] ?? [];
+        isLoadingDerivedItems = false;
+      });
+    }
   }
 
   @override
@@ -116,6 +177,15 @@ class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
                 ),
               ),
               const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SimpleCronometro(),
+                  const SizedBox(width: 10),
+                  Simple15sTimer()
+                ],
+              ),
+              const SizedBox(height: 10),
               Expanded(
                 child: FutureBuilder<List<dynamic>>(
                   future: _subCriteriaFuture,
@@ -145,27 +215,53 @@ class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
                         final bool isSelected = selectedSubcriteria != null &&
                             selectedSubcriteria!['id'] == subCriteria['id'];
 
-                        final List<dynamic> measurableItems = isSelected
-                            ? (subCriteria['items'] as List)
+                        if (isSelected && isLoadingDerivedItems) {
+                          // Loading geral enquanto carrega os itens derivados
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 16),
+                                child: SubcriteriaCard(
+                                  subcriteria: subCriteria,
+                                  onPressed: () =>
+                                      onSelectSubcriteria(subCriteria),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0XFFA6B92E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        final measurableItems = isSelected
+                            ? derivedItems
                                 .where((item) => item['aspect'] == 'measurable')
                                 .toList()
                             : [];
 
-                        final List<dynamic> quantitativeItems = isSelected
-                            ? (subCriteria['items'] as List)
+                        final quantitativeItems = isSelected
+                            ? derivedItems
                                 .where(
                                     (item) => item['aspect'] == 'quantitative')
                                 .toList()
                             : [];
 
-                        final List<dynamic> subjectiveItems = isSelected
-                            ? (subCriteria['items'] as List)
+                        final subjectiveItems = isSelected
+                            ? derivedItems
                                 .where((item) => item['aspect'] == 'subjective')
                                 .toList()
                             : [];
 
-                        final List<dynamic> questionnaireItems = isSelected
-                            ? (subCriteria['items'] as List)
+                        final questionnaireItems = isSelected
+                            ? derivedItems
                                 .where(
                                     (item) => item['aspect'] == 'questionnaire')
                                 .toList()
@@ -178,12 +274,8 @@ class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
                                   vertical: 8.0, horizontal: 16),
                               child: SubcriteriaCard(
                                 subcriteria: subCriteria,
-                                onPressed: () {
-                                  setState(() {
-                                    selectedSubcriteria =
-                                        isSelected ? null : subCriteria;
-                                  });
-                                },
+                                onPressed: () =>
+                                    onSelectSubcriteria(subCriteria),
                               ),
                             ),
                             if (isSelected)
@@ -196,16 +288,16 @@ class _SubcriteriaTechnicalPageState extends State<SubcriteriaTechnicalPage> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: MeasurableCard(
-                                              itemName: item['name'],
-                                              itemId: item["id"]),
+                                            itemName: item['name'],
+                                            itemId: item["id"],
+                                          ),
                                         )),
                                     ...quantitativeItems.map((item) => Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 8.0),
                                           child: QuantitativeCard(
                                             itemName: item['name'],
-                                            itemId: item[
-                                                'id'], // <-- aqui o id do item para o submit funcionar
+                                            itemId: item['id'],
                                           ),
                                         )),
                                     ...subjectiveItems.map((item) => Padding(

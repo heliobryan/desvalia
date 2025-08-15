@@ -15,7 +15,14 @@ class FilterCategory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categories = ['SUB 9', 'SUB 10', 'SUB 11', 'SUB 12'];
+    final categories = [
+      'SUB 9',
+      'SUB 10',
+      'SUB 11',
+      'SUB 12',
+      "SUB 13",
+      "SUB 14"
+    ];
 
     return ConstrainedBox(
       constraints: const BoxConstraints(
@@ -29,7 +36,6 @@ class FilterCategory extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: const Color(0XFFb0c32e)),
           borderRadius: BorderRadius.circular(8),
-          color: Colors.black.withOpacity(0.3),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
@@ -47,7 +53,7 @@ class FilterCategory extends StatelessWidget {
               );
             }).toList(),
             onChanged: onCategorySelected,
-            isExpanded: true, // faz o dropdown preencher a largura do container
+            isExpanded: true,
           ),
         ),
       ),

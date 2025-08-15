@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'package:des/src/Commom/rest_client.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeServices {

@@ -1,14 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/Modules/Athletes/service/get_athletes.dart';
-import 'package:des/src/Modules/Athletes/widgets/Filters/category_filter.dart';
-import 'package:des/src/Modules/Athletes/widgets/Filters/gender_filter.dart';
-import 'package:des/src/Modules/Athletes/widgets/Filters/team_filter.dart';
 import 'package:des/src/Modules/Athletes/widgets/athletes_card.dart';
 import 'package:des/src/Modules/Athletes/widgets/search_athletes.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +25,7 @@ class _AthletesPageState extends State<AthletesPage> {
   bool isLoading = true;
   String? token;
   String? selectedCategory;
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -35,45 +34,93 @@ class _AthletesPageState extends State<AthletesPage> {
   }
 
   Future<void> loadAthletes() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    if (token != null && token.isNotEmpty) {
+    final cachedData = prefs.getString('cachedAthletes');
+    if (cachedData != null) {
+      try {
+        final decoded = List<Map<String, dynamic>>.from(jsonDecode(cachedData));
+        athleteList = decoded;
+        log("Carregado do cache");
+      } catch (e) {
+        log("Erro ao decodificar cache: $e");
+        athleteList = [];
+      }
+    } else if (token != null && token.isNotEmpty) {
       try {
         final restClient = RestClient(token: token);
         final athletesService = GetAthletesService(restClient);
-
         final data = await athletesService.fetchAthletes();
 
-        setState(() {
-          athleteList = data;
-          filteredAthleteList = data;
-          isLoading = false;
-        });
+        await prefs.setString('cachedAthletes', jsonEncode(data));
+        athleteList = data;
       } catch (e) {
         log('Erro ao carregar atletas: $e');
-        setState(() => isLoading = false);
+        athleteList = [];
       }
     } else {
       log("Token não encontrado.");
-      setState(() => isLoading = false);
+      athleteList = [];
     }
+
+    // aplica filtros iniciais (categoria + busca vazia)
+    _applyFilters();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _applyFilters() {
+    final q = (searchQuery).trim().toLowerCase();
+
+    filteredAthleteList = athleteList.where((athlete) {
+      // Category filter
+      if (selectedCategory != null && selectedCategory!.isNotEmpty) {
+        final cat = athlete['category'];
+        if (cat == null || cat.toString().trim() != selectedCategory!.trim()) {
+          return false;
+        }
+      }
+
+      // Search filter
+      if (q.isNotEmpty) {
+        final user = athlete['user'] ?? {};
+        final fullName = '${user['name'] ?? ''} ${user['last_name'] ?? ''}'
+            .trim()
+            .toLowerCase();
+        // também buscar por time, posição ou outros campos se quiser
+        final team = athlete['team']?['name']?.toString().toLowerCase() ?? '';
+        final position = (athlete['position'] ?? '').toString().toLowerCase();
+
+        // match if any contains the query
+        if (!fullName.contains(q) &&
+            !team.contains(q) &&
+            !position.contains(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
   }
 
   void filterAthletesByCategory(String? category) {
     setState(() {
       selectedCategory = category;
+      _applyFilters();
+    });
+  }
 
-      if (category == null || category.isEmpty) {
-        filteredAthleteList = athleteList;
-      } else {
-        filteredAthleteList = athleteList.where((athlete) {
-          return athlete['category'] != null &&
-              athlete['category'].toString().trim() == category.trim();
-        }).toList();
-      }
-
-      log("Lista filtrada: $filteredAthleteList");
+  void _onSearchChanged(String value) {
+    setState(() {
+      searchQuery = value;
+      _applyFilters();
     });
   }
 
@@ -151,52 +198,60 @@ class _AthletesPageState extends State<AthletesPage> {
                   ),
                 ),
                 const SizedBox(height: 15),
-                const SearchAthletes(),
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      flex: 3, // peso proporcional, você pode ajustar
-                      child: const FilterGender(),
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      flex: 4,
-                      child: FilterCategory(
-                        selectedCategory: selectedCategory,
-                        onCategorySelected: filterAthletesByCategory,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      flex: 3,
-                      child: const TeamFilter(),
-                    ),
-                  ],
+                SearchAthletes(
+                  onChanged: _onSearchChanged,
+                  initialValue: searchQuery,
                 ),
-                const SizedBox(height: 30),
-                isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Expanded(
-                        child: ListView.builder(
-                          itemCount: filteredAthleteList.length,
-                          itemBuilder: (context, index) {
-                            final athlete = filteredAthleteList[index];
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 6.0),
-                              child: Center(
-                                child: SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.8,
-                                  child: AthletesCard(athlete: athlete),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                const SizedBox(height: 5),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: [
+                //     const Flexible(
+                //       flex: 3,
+                //       child: FilterGender(),
+                //     ),
+                //     const SizedBox(width: 10),
+                //     Flexible(
+                //       flex: 4,
+                //       child: FilterCategory(
+                //         selectedCategory: selectedCategory,
+                //         onCategorySelected: filterAthletesByCategory,
+                //       ),
+                //     ),
+                //     const SizedBox(width: 10),
+                //     const Flexible(
+                //       flex: 3,
+                //       child: TeamFilter(),
+                //     ),
+                //   ],
+                // ),
+                const SizedBox(height: 10),
+                if (isLoading) ...[
+                  const CircularProgressIndicator(color: Colors.white)
+                ] else if (filteredAthleteList.isEmpty) ...[
+                  const Text(
+                    'Nenhum atleta encontrado.',
+                    style: TextStyle(color: Colors.white),
+                  )
+                ] else ...[
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredAthleteList.length,
+                      itemBuilder: (context, index) {
+                        final athlete = filteredAthleteList[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
+                          child: Center(
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.8,
+                              child: AthletesCard(athlete: athlete),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

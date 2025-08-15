@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-import 'dart:developer';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/Modules/Subcriteria/Services/send_values.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/measurable/widgets/measurable_card_athletes_info.dart';
@@ -23,7 +22,6 @@ class MeasurableCard extends StatefulWidget {
 class _MeasurableCardState extends State<MeasurableCard> {
   final Map<String, List<TextEditingController>> controllersMap = {};
   List<Map<String, dynamic>> filteredAthletes = [];
-  bool isLoading = true;
   late SendValues measurableService;
 
   // Cache estático para a sessão - mantém os dados enquanto o app rodar
@@ -41,12 +39,11 @@ class _MeasurableCardState extends State<MeasurableCard> {
       if (token != null && mounted) {
         measurableService = SendValues(token);
         if (_cachedAthletes != null) {
-          // Se temos cache, usa direto
+          // Usa cache direto
           filteredAthletes = _cachedAthletes!;
-          isLoading = false;
           setState(() {});
         } else {
-          // Senão, carrega da API e salva no cache
+          // Carrega da API e salva no cache
           _loadAthletes(token);
         }
       }
@@ -54,18 +51,15 @@ class _MeasurableCardState extends State<MeasurableCard> {
   }
 
   Future<void> _loadAthletes(String token) async {
-    setState(() => isLoading = true);
     try {
       final filtered = await measurableService.loadFilteredAthletes(token);
       if (!mounted) return;
       filteredAthletes = filtered;
       _cachedAthletes = filtered; // salva no cache da sessão
-      isLoading = false;
       setState(() {});
     } catch (_) {
       if (!mounted) return;
       filteredAthletes = [];
-      isLoading = false;
       setState(() {});
     }
   }
@@ -87,16 +81,10 @@ class _MeasurableCardState extends State<MeasurableCard> {
     final cardWidth = screenWidth * 0.9;
     final buttonWidth = screenWidth * 0.75;
 
-    if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0XFFA6B92E)),
-      );
-    }
-
     if (filteredAthletes.isEmpty) {
       return const Center(
         child: Text(
-          'Nenhum atleta com avaliação encontrada',
+          '',
           style: TextStyle(color: Colors.white),
         ),
       );
@@ -138,6 +126,7 @@ class _MeasurableCardState extends State<MeasurableCard> {
 
             return MeasurableCardAthletesInfo(
               athleteName: name,
+              itemId: widget.itemId,
               controller1: controllersMap[name]![0],
               controller2: controllersMap[name]![1],
               controller3: controllersMap[name]![2],
@@ -253,10 +242,7 @@ class _MeasurableCardState extends State<MeasurableCard> {
                         );
 
                         _buttonTextNotifier.value = 'Avaliação $count enviada';
-
-                        log('Score enviado para ${result['name']} com sucesso.');
-                      } catch (e) {
-                        log('Erro ao enviar score para ${result['name']}: $e');
+                      } catch (_) {
                         allSuccess = false;
                       }
 

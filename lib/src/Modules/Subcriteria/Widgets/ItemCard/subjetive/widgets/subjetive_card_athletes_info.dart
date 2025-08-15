@@ -1,12 +1,9 @@
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:flutter/material.dart';
 
-import 'package:des/src/GlobalConstants/font.dart';
-import 'package:flutter/material.dart';
-
 class SubjetiveCardAthletesInfo extends StatefulWidget {
   final String athleteName;
-  final ValueChanged<int> onScoreChanged; // número de estrelas
+  final ValueChanged<int> onScoreChanged;
 
   const SubjetiveCardAthletesInfo({
     super.key,
@@ -22,14 +19,12 @@ class SubjetiveCardAthletesInfo extends StatefulWidget {
 class _SubjetiveCardAthletesInfoState extends State<SubjetiveCardAthletesInfo> {
   final List<bool> _starsSelected = List.generate(5, (_) => false);
 
-  void _updateStars(int index) {
+  void _toggleStar(int index) {
     setState(() {
-      for (int i = 0; i < 5; i++) {
-        _starsSelected[i] = i <= index;
-      }
+      _starsSelected[index] = !_starsSelected[index];
     });
 
-    final starsCount = index + 1; // index é zero-based
+    final starsCount = _starsSelected.where((selected) => selected).length;
     widget.onScoreChanged(starsCount);
   }
 
@@ -61,7 +56,7 @@ class _SubjetiveCardAthletesInfoState extends State<SubjetiveCardAthletesInfo> {
                   color: const Color(0XFFA6B92E),
                   size: screenWidth < 400 ? 28 : 36,
                 ),
-                onPressed: () => _updateStars(index),
+                onPressed: () => _toggleStar(index),
               );
             }),
           ),

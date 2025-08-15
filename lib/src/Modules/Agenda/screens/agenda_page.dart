@@ -43,13 +43,30 @@ class _AgendaPageState extends State<AgendaPage> {
 
     await userInfo();
 
+    // Tenta carregar do cache
+    final cachedData = prefs.getString('cachedEvaluations');
+    if (cachedData != null) {
+      final decoded = jsonDecode(cachedData);
+      if (decoded is List) {
+        setState(() {
+          eventList = decoded;
+          filteredEventList = decoded;
+          isLoading = false;
+        });
+        log("Avaliações carregadas do cache");
+        return; // sai para não buscar da API
+      }
+    }
+
+    // Se não tem cache, chama a API
     if (token != null && token.isNotEmpty) {
       try {
         final restClient = RestClient(token: token);
-
         final evaluationsService = GetEvaluationsService(restClient);
-
         final evaluations = await evaluationsService.fetchEvaluations();
+
+        // Salva no cache
+        await prefs.setString('cachedEvaluations', jsonEncode(evaluations));
 
         setState(() {
           eventList = evaluations;

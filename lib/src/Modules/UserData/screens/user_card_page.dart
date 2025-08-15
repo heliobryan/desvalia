@@ -174,6 +174,7 @@ class _UserCardPageState extends State<UserCardPage> {
                       log("overall: $overall");
 
                       return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const SizedBox(height: 20),

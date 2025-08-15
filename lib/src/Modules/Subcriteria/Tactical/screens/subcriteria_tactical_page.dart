@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/GlobalWidgets/title_layout_vetor.dart';
@@ -8,6 +10,7 @@ import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/questionnaire/card/
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/subjetive/card/subjetive_card.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/SubcriteriaCardGlobal/subcriteria_card.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SubcriteriaTacticalPage extends StatefulWidget {
   const SubcriteriaTacticalPage({super.key});
@@ -20,11 +23,36 @@ class SubcriteriaTacticalPage extends StatefulWidget {
 class _SubcriteriaTacticalPageState extends State<SubcriteriaTacticalPage> {
   late Future<List<dynamic>> _subCriteriaFuture;
   Map<String, dynamic>? selectedSubcriteria;
+  final int criterionId = 3;
 
   @override
   void initState() {
     super.initState();
     _subCriteriaFuture = getSubcriteria(criterionId: 3);
+    _loadSubcriteria();
+  }
+
+  void _loadSubcriteria() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cachedSubcriteria_$criterionId';
+
+    final cachedString = prefs.getString(cacheKey);
+    if (cachedString != null) {
+      final List<dynamic> cachedData =
+          List<dynamic>.from(jsonDecode(cachedString));
+      setState(() {
+        _subCriteriaFuture = Future.value(cachedData);
+      });
+      return;
+    }
+
+    setState(() {
+      _subCriteriaFuture =
+          getSubcriteria(criterionId: criterionId).then((data) async {
+        await prefs.setString(cacheKey, jsonEncode(data));
+        return data;
+      });
+    });
   }
 
   @override

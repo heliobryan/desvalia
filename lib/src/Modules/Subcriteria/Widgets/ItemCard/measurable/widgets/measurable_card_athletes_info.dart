@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class MeasurableCardAthletesInfo extends StatelessWidget {
   final String athleteName;
+  final int itemId; // novo parâmetro
   final TextEditingController controller1;
   final TextEditingController controller2;
   final TextEditingController controller3;
@@ -15,6 +16,7 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
   const MeasurableCardAthletesInfo({
     super.key,
     required this.athleteName,
+    required this.itemId, // receber aqui
     required this.controller1,
     required this.controller2,
     required this.controller3,
@@ -57,9 +59,13 @@ class MeasurableCardAthletesInfo extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _buildTextFieldContainer(screenWidth, controller1, validation1),
-            _buildTextFieldContainer(screenWidth, controller2, validation2),
-            _buildTextFieldContainer(screenWidth, controller3, validation3),
+            if (itemId == 16 || itemId == 17)
+              _buildTextFieldContainer(screenWidth, controller1, validation1)
+            else ...[
+              _buildTextFieldContainer(screenWidth, controller1, validation1),
+              _buildTextFieldContainer(screenWidth, controller2, validation2),
+              _buildTextFieldContainer(screenWidth, controller3, validation3),
+            ],
           ],
         ),
         const SizedBox(height: 20),

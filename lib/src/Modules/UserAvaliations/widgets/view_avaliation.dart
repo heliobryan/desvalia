@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:flutter/material.dart';
 
@@ -50,7 +52,7 @@ class ViewAvaliation extends StatelessWidget {
                   decoration: const BoxDecoration(color: Colors.black),
                   child: Center(
                     child: Text(
-                      "$score $measurement",
+                      score,
                       style: secondFont.bold(color: Colors.white, fontSize: 17),
                     ),
                   ),

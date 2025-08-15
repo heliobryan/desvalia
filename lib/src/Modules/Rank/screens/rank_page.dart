@@ -1,13 +1,12 @@
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: unnecessary_null_comparison, deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/font.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
 import 'package:des/src/Modules/Athletes/widgets/Filters/category_filter.dart';
-import 'package:des/src/Modules/Athletes/widgets/Filters/gender_filter.dart';
-import 'package:des/src/Modules/Athletes/widgets/Filters/team_filter.dart';
 import 'package:des/src/Modules/Athletes/widgets/search_athletes.dart';
 import 'package:des/src/Modules/Rank/services/get_scores.dart';
 import 'package:des/src/Modules/Rank/widgets/rank_card.dart';
@@ -15,9 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RankPage extends StatefulWidget {
-  const RankPage({
-    super.key,
-  });
+  const RankPage({super.key});
 
   @override
   State<RankPage> createState() => _RankPageState();
@@ -27,8 +24,8 @@ class _RankPageState extends State<RankPage> {
   List<Map<String, dynamic>> athleteList = [];
   List<Map<String, dynamic>> filteredAthleteList = [];
   bool isLoading = true;
-  String? token;
   String? selectedCategory;
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -40,13 +37,31 @@ class _RankPageState extends State<RankPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
+    // Tenta carregar do cache
+    final cachedData = prefs.getString('cachedAthletes');
+    if (cachedData != null) {
+      final decoded = List<Map<String, dynamic>>.from(jsonDecode(cachedData));
+      setState(() {
+        athleteList = decoded;
+        filteredAthleteList = decoded;
+        isLoading = false;
+      });
+      log("Carregado do cache");
+      return;
+    }
+
     if (token != null && token.isNotEmpty) {
       try {
         final restClient = RestClient(token: token);
         final getScoresService = GetScoresService(restClient);
 
-        final data = await getScoresService.fetchAthletes();
+        // Usa o fetchAthletes do seu serviço com endpoint 'api/participants'
+        final data = await getScoresService.fetchAthletes(getAll: true);
+
+        // Ordena pela pontuação overall, caso tenha
         data.sort((a, b) => (b['overall'] ?? 0).compareTo(a['overall'] ?? 0));
+
+        await prefs.setString('cachedAthletes', jsonEncode(data));
 
         if (!mounted) return;
         setState(() {
@@ -55,6 +70,7 @@ class _RankPageState extends State<RankPage> {
           isLoading = false;
         });
       } catch (e) {
+        log("Erro ao carregar atletas: $e");
         if (!mounted) return;
         setState(() => isLoading = false);
       }
@@ -64,21 +80,40 @@ class _RankPageState extends State<RankPage> {
     }
   }
 
-  void filterAthletesByCategory(String? category) {
+  void filterAthletes() {
     setState(() {
-      selectedCategory = category;
+      final catFilter =
+          selectedCategory?.toLowerCase().replaceAll(RegExp(r'[\s\-]'), '') ??
+              '';
+      final searchLower = searchQuery.toLowerCase();
 
-      if (category == null || category.isEmpty) {
-        filteredAthleteList = athleteList;
-      } else {
-        filteredAthleteList = athleteList.where((athlete) {
-          return athlete['category'] != null &&
-              athlete['category'].toString().trim() == category.trim();
-        }).toList();
-      }
+      filteredAthleteList = athleteList.where((athlete) {
+        final cat = athlete['category']
+                ?.toString()
+                .toLowerCase()
+                .replaceAll(RegExp(r'[\s\-]'), '') ??
+            '';
+        final user = athlete['user'];
+        final name = user != null
+            ? '${user['name'] ?? ''} ${user['last_name'] ?? ''}'.toLowerCase()
+            : '';
 
-      log("Lista filtrada: $filteredAthleteList");
+        final matchesCategory = catFilter.isEmpty || cat.contains(catFilter);
+        final matchesSearch = searchLower.isEmpty || name.contains(searchLower);
+
+        return matchesCategory && matchesSearch;
+      }).toList();
     });
+  }
+
+  void filterAthletesByCategory(String? category) {
+    selectedCategory = category;
+    filterAthletes();
+  }
+
+  void onSearchChanged(String value) {
+    searchQuery = value;
+    filterAthletes();
   }
 
   Color _getBorderColorByRank(int rank) {
@@ -132,7 +167,6 @@ class _RankPageState extends State<RankPage> {
               colors: [
                 Colors.black,
                 Colors.black,
-                // ignore: deprecated_member_use
                 const Color(0xFF42472B).withOpacity(0.5),
               ],
             ),
@@ -169,22 +203,18 @@ class _RankPageState extends State<RankPage> {
                   ),
                 ),
                 const SizedBox(height: 15),
-                const SearchAthletes(),
+                SearchAthletes(onChanged: onSearchChanged),
                 const SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(flex: 3, child: const FilterGender()),
-                    const SizedBox(width: 10),
                     Flexible(
-                      flex: 4,
+                      flex: 15,
                       child: FilterCategory(
                         selectedCategory: selectedCategory,
                         onCategorySelected: filterAthletesByCategory,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Flexible(flex: 3, child: const TeamFilter()),
                   ],
                 ),
                 const SizedBox(height: 30),

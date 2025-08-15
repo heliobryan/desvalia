@@ -1,7 +1,7 @@
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
 import 'package:des/src/GlobalConstants/font.dart';
-import 'package:des/src/Modules/Subcriteria/Services/get_participants.dart';
 import 'package:des/src/Modules/Subcriteria/Services/send_values.dart';
 import 'package:des/src/Modules/Subcriteria/Widgets/ItemCard/subjetive/widgets/subjetive_card_athletes_info.dart';
 import 'package:flutter/material.dart';
@@ -23,39 +23,51 @@ class SubjetiveCard extends StatefulWidget {
 
 class _SubjetiveCardState extends State<SubjetiveCard> {
   final Map<String, int> scoresMap = {}; // nome -> score em pontos
-  bool isLoading = true;
   List<Map<String, dynamic>> athletes = [];
   late SendValues measurableService;
   String buttonText = "SALVAR AVALIAÇÃO";
 
+  // Cache estático para a sessão - mantém os dados enquanto o app rodar
+  static List<Map<String, dynamic>>? _cachedAthletes;
+
   @override
   void initState() {
     super.initState();
-    _loadAthletes();
+    _initLoad();
   }
 
-  Future<void> _loadAthletes() async {
+  Future<void> _initLoad() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
-
-    if (token == null) {
-      setState(() => isLoading = false);
-      return;
-    }
+    if (token == null) return;
 
     measurableService = SendValues(token);
 
+    if (_cachedAthletes != null) {
+      // Usa cache direto
+      athletes = _cachedAthletes!;
+      setState(() {});
+    } else {
+      // Carrega da API e salva no cache
+      await _loadAthletes(token);
+    }
+  }
+
+  Future<void> _loadAthletes(String token) async {
+    final stopwatch = Stopwatch()..start();
     try {
       final filteredAthletes =
           await measurableService.loadFilteredAthletes(token);
-
-      setState(() {
-        athletes = filteredAthletes;
-        isLoading = false;
-      });
+      stopwatch.stop();
+      log('loadFilteredAthletes demorou: ${stopwatch.elapsedMilliseconds} ms');
+      _cachedAthletes = filteredAthletes;
+      athletes = filteredAthletes;
+      setState(() {});
     } catch (e) {
-      log("Erro ao carregar atletas filtrados: $e");
-      setState(() => isLoading = false);
+      stopwatch.stop();
+      log("Erro ao carregar atletas filtrados: $e, tempo: ${stopwatch.elapsedMilliseconds} ms");
+      athletes = [];
+      setState(() {});
     }
   }
 
@@ -72,13 +84,12 @@ class _SubjetiveCardState extends State<SubjetiveCard> {
       return;
     }
 
-    // monta lista de resultados
     final results = scoresMap.entries
         .where((e) => e.value > 0)
         .map((e) => {
               "item_id": widget.itemId,
               "name": e.key,
-              "score": e.value.toDouble(), // força double
+              "score": e.value.toDouble(),
             })
         .toList();
 
@@ -124,16 +135,9 @@ class _SubjetiveCardState extends State<SubjetiveCard> {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardMaxWidth = screenWidth * 0.9;
 
-    if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0XFFA6B92E)),
-      );
-    }
-
     if (athletes.isEmpty) {
       return const Center(
-        child: Text('Nenhum atleta encontrado',
-            style: TextStyle(color: Colors.white)),
+        child: Text('', style: TextStyle(color: Colors.white)),
       );
     }
 

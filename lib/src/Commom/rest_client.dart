@@ -8,7 +8,8 @@ class RestClient {
 
   RestClient({String? token})
       : _dio = Dio(BaseOptions(
-          baseUrl: dotenv.env['API_HOST'] ?? '',
+          baseUrl: dotenv.env['API_HOST'] ??
+              'https://api.des.versatecnologia.com.br/api',
           headers: {
             if (token != null) 'Authorization': 'Bearer $token',
             'Accept': 'application/json',

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:des/src/Commom/rest_client.dart';
 import 'package:des/src/GlobalConstants/images.dart';
 import 'package:des/src/GlobalWidgets/exit_button.dart';
@@ -29,12 +31,26 @@ class _CriteriaPageState extends State<CriteriaPage> {
   void _loadCriteria() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-
     final restClient = RestClient(token: token);
     final criteriaService = CriteriaService(restClient);
 
+    // Tentar carregar do cache
+    final cachedString = prefs.getString('cachedCriteria');
+    if (cachedString != null) {
+      final List<dynamic> cachedData =
+          List<dynamic>.from(jsonDecode(cachedString));
+      setState(() {
+        _criteriaFuture = Future.value(cachedData);
+      });
+      return;
+    }
+
+    // Se não tiver cache, busca da API e salva no cache
     setState(() {
-      _criteriaFuture = criteriaService.getCriteria();
+      _criteriaFuture = criteriaService.getCriteria().then((data) async {
+        await prefs.setString('cachedCriteria', jsonEncode(data));
+        return data;
+      });
     });
   }
 

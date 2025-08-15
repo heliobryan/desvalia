@@ -28,8 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final name =
-        '${user['name'] ?? ''} ${user['last_name'] ?? ''}'.toUpperCase();
+    final name = '${user['name'] ?? ''}'.toUpperCase();
     final position = athlete['position'] ?? 'POSIÇÃO DESCONHECIDA';
     final modality = athlete['modality']?['name'] ?? 'Modalidade';
     final team = athlete['team']?['name'] ?? 'Time';
@@ -139,9 +138,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  name,
-                  style: principalFont.bold(color: Colors.white, fontSize: 20),
+                Center(
+                  child: Text(
+                    name,
+                    style:
+                        principalFont.bold(color: Colors.white, fontSize: 20),
+                  ),
                 ),
                 Text(
                   "$position - $modality",
